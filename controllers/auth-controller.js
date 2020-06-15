@@ -1,13 +1,18 @@
 const { OAuth2Client } = require("google-auth-library");
 const bcrypt = require("bcryptjs");
 const HttpError = require("../models/http-error");
+const jwt = require("jsonwebtoken");
 
 const DUMMY_USERS = [
   {
     id: "u1",
-    email: "test@test.com",
     name: "Test test",
+    email: "test@test.com",
+    emailVerified: false,
+    phone: "",
+    phoneVerified: false,
     image: "",
+    events: [],
     account: {
       connectedVia: "email",
       secret: "test@123",
@@ -16,36 +21,105 @@ const DUMMY_USERS = [
 ];
 
 const facebookAuth = (req, res, next) => {
-  DUMMY_USERS.push(req.user);
-  return res.json({ user: req.user });
+  if (req.user) {
+    DUMMY_USERS.push(req.user);
+  } else {
+    const error = new HttpError("Authentication using FB failed!", 401);
+    return next(error);
+  }
+  const token = jwt.sign(
+    {
+      id: req.user.id,
+      email: req.user.email,
+      phone: req.user.phone,
+    },
+    process.env.JWT_SECRET_KEY,
+    {
+      expiresIn: "1h",
+    }
+  );
+  res.setHeader("Authorization", "Bearer " + token);
+  res.setHeader("Authorization-token-expiration", 1000 * 60 * 60);
+  res.json({
+    metdata: {
+      message:
+        "Facebook authentication successfull! Please find the auth token in the headers.",
+      data: true,
+    },
+    data: {
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      emailVerified: req.user.emailVerified,
+      phone: req.user.phone,
+      phoneVerified: req.user.phoneVerified,
+    },
+  });
 };
 
 const googleAuth = async (req, res, next) => {
-  const { token } = req.body;
+  const { idToken } = req.body;
+  if (!idToken) {
+    res.status(400);
+    return next(new HttpError("idToken field expected!"), 400);
+  }
   const client = new OAuth2Client(process.env.GOOGLE_OAUTH_CLIENT_ID);
   let ticket;
   try {
     ticket = await client.verifyIdToken({
-      idToken: token,
+      idToken: idToken,
       audience: process.env.GOOGLE_OAUTH_CLIENT_ID,
     });
     const payload = ticket.getPayload();
     console.log(payload);
     const createdUser = {
-      id: "u2",
-      email: payload["email"],
-      name: payload["given_name"] + " " + payload["family_name"],
-      image: payload["picture"],
+      id: "u1",
+      name: "Test test",
+      email: "test@test.com",
+      emailVerified: false,
+      phone: "",
+      phoneVerified: false,
+      image: "",
+      events: [],
       account: {
         connectedVia: "google",
         secret: payload["sub"],
       },
     };
     DUMMY_USERS.push(createdUser);
-    res.json({ user: createdUser });
+    const token = jwt.sign(
+      {
+        id: createdUser.id,
+        email: createdUser.email,
+        phone: createdUser.phone,
+      },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "1h",
+      }
+    );
+    res.setHeader("Authorization", "Bearer " + token);
+    res.setHeader("Authorization-token-expiration", 1000 * 60 * 60);
+    res.json({
+      metdata: {
+        message:
+          "Google authentication successfull! Please find the auth token in the headers.",
+        data: true,
+      },
+      data: {
+        id: createdUser.id,
+        name: createdUser.name,
+        email: createdUser.email,
+        emailVerified: createdUser.emailVerified,
+        phone: createdUser.phone,
+        phoneVerified: createdUser.phoneVerified,
+      },
+    });
   } catch (err) {
-    console.log(err);
-    res.json({ error: err.message });
+    res.status(401);
+    return next(
+      new HttpError("Authentication using google failed! " + err.message, 401)
+    );
   }
 };
 
@@ -53,17 +127,48 @@ const emailSignup = async (req, res, next) => {
   const { name, email, password } = req.body;
   const hashPassword = await bcrypt.hash(password, 12);
   const createdUser = {
-    id: "u2",
-    email: email,
+    id: "u1",
     name: name,
+    email: email,
+    emailVerified: false,
+    phone: "",
+    phoneVerified: false,
     image: "",
+    events: [],
     account: {
       connectedVia: "email",
       secret: hashPassword,
     },
   };
   DUMMY_USERS.push(createdUser);
-  res.json({ user: createdUser });
+  const token = jwt.sign(
+    {
+      id: createdUser.id,
+      email: createdUser.email,
+      phone: createdUser.phone,
+    },
+    process.env.JWT_SECRET_KEY,
+    {
+      expiresIn: "1h",
+    }
+  );
+  res.setHeader("Authorization", "Bearer " + token);
+  res.setHeader("Authorization-token-expiration", 1000 * 60 * 60);
+  res.json({
+    metdata: {
+      message:
+        "Email authentication successfull! Please find the auth token in the headers.",
+      data: true,
+    },
+    data: {
+      id: createdUser.id,
+      name: createdUser.name,
+      email: createdUser.email,
+      emailVerified: createdUser.emailVerified,
+      phone: createdUser.phone,
+      phoneVerified: createdUser.phoneVerified,
+    },
+  });
 };
 
 const emailLogin = async (req, res, next) => {
@@ -72,8 +177,9 @@ const emailLogin = async (req, res, next) => {
     return user.email === email;
   });
   if (!identifiedUser) {
+    res.status(400);
     return next(
-      new HttpError("Could not find any account with this email", 401)
+      new HttpError("Could not find any account with this email", 400)
     );
   }
   let isValidPassword = false;
@@ -82,16 +188,43 @@ const emailLogin = async (req, res, next) => {
       password,
       identifiedUser.account.secret
     );
-    console.log("valid: " + isValidPassword); 
   } catch (err) {
     return next(new HttpError("Server error!", 500));
   }
   if (!isValidPassword) {
+    res.status(400);
     return next(
-      new HttpError("Please check your credentials and try again!", 401)
+      new HttpError("Please check your credentials and try again!", 400)
     );
   }
-  res.json({ user: identifiedUser });
+  const token = jwt.sign(
+    {
+      id: identifiedUser.id,
+      email: identifiedUser.email,
+      phone: identifiedUser.phone,
+    },
+    process.env.JWT_SECRET_KEY,
+    {
+      expiresIn: "1h",
+    }
+  );
+  res.setHeader("Authorization", "Bearer " + token);
+  res.setHeader("Authorization-token-expiration", 1000 * 60 * 60);
+  res.json({
+    metdata: {
+      message:
+        "Email authentication successfull! Please find the auth token in the headers.",
+      data: true,
+    },
+    data: {
+      id: identifiedUser.id,
+      name: identifiedUser.name,
+      email: identifiedUser.email,
+      emailVerified: identifiedUser.emailVerified,
+      phone: identifiedUser.phone,
+      phoneVerified: identifiedUser.phoneVerified,
+    },
+  });
 };
 
 const getAllUsers = (req, res, next) => {

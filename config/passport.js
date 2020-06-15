@@ -17,16 +17,23 @@ passport.use(
       callbackURL: "",
     },
     function (accessToken, refreshToken, profile, done) {
-      var createdUser = {
-        id: "u3",
-        email: profile.emails[0].value,
-        name: profile.displayName,
-        image: profile.photos[0].value,
-        account: {
-          connectedVia: "facebook",
-          secret: profile.id,
-        },
-      };
+      let createdUser = null;
+      if (profile) {
+        createdUser = {
+          id: "u3",
+          name: "Test test",
+          email: "test@test.com",
+          emailVerified: false,
+          phone: "",
+          phoneVerified: false,
+          image: "",
+          events: [],
+          account: {
+            connectedVia: "facebook",
+            secret: profile.id,
+          },
+        };
+      }
       done(null, createdUser);
     }
   )
