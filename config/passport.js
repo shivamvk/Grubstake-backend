@@ -19,22 +19,14 @@ passport.use(
     function (accessToken, refreshToken, profile, done) {
       let createdUser = null;
       if (profile) {
-        createdUser = {
-          id: "u3",
-          name: "Test test",
-          email: "test@test.com",
-          emailVerified: false,
-          phone: "",
-          phoneVerified: false,
-          image: "",
-          events: [],
-          account: {
-            connectedVia: "facebook",
-            secret: profile.id,
-          },
+        fbUserDetails = {
+          id: profile.id,
+          name: profile.displayName,
+          email: profile.emails[0].value,
+          image: profile.photos[0].value,
         };
       }
-      done(null, createdUser);
+      done(null, fbUserDetails);
     }
   )
 );

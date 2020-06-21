@@ -4,6 +4,6 @@ module.exports = (req, res, next) => {
     "Access-Control-Allow-Headers",
     "Origin, Access-Control-Allow-Headers, X-Requested-With, Content-Type, Authorization"
   );
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
   next();
 };
