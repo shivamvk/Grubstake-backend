@@ -68,15 +68,14 @@ const facebookAuth = async (req, res, next) => {
       expiresIn: "1h",
     }
   );
-  res.setHeader("Authorization", "Bearer " + token);
-  res.setHeader("Authorization-token-expiration", 1000 * 60 * 60);
   res.json({
     metadata: {
-      message:
-        "Facebook authentication successfull! Please find the auth token in the headers.",
+      message: "Facebook authentication successfull!",
       data: true,
     },
     data: {
+      token: token,
+      tokenExpirationTime: "1h",
       id: userDataForResponse.id,
       name: userDataForResponse.name,
       email: userDataForResponse.email,
@@ -152,15 +151,14 @@ const googleAuth = async (req, res, next) => {
         expiresIn: "1h",
       }
     );
-    res.setHeader("Authorization", "Bearer " + token);
-    res.setHeader("Authorization-token-expiration", 1000 * 60 * 60);
     res.json({
       metadata: {
-        message:
-          "Google authentication successfull! Please find the auth token in the headers.",
+        message: "Google authentication successfull!",
         data: true,
       },
       data: {
+        token: token,
+        tokenExpirationTime: "1h",
         id: userDataForResponse.id,
         name: userDataForResponse.name,
         email: userDataForResponse.email,
@@ -245,8 +243,7 @@ const emailSignup = async (req, res, next) => {
   );
   res.json({
     metadata: {
-      message:
-        "Email authentication successfull! Please find the auth token in the headers.",
+      message: "Email authentication successfull!",
       data: true,
     },
     data: {
