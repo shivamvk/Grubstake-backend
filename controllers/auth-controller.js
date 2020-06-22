@@ -1,6 +1,5 @@
 const { OAuth2Client } = require("google-auth-library");
 const bcrypt = require("bcryptjs");
-const HttpError = require("../models/http-error");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { validationResult } = require("express-validator");
@@ -16,8 +15,18 @@ const facebookAuth = async (req, res, next) => {
     fbemail = req.user.email;
     fbimage = req.user.image;
   } else {
-    const error = new HttpError("Authentication using FB failed!", 401);
-    return next(error);
+    return res.json({
+      metadata: {
+        message: "Auhtentication using facebook failed!",
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Auth using fb failed! try again later.",
+        code: 400,
+      },
+    });
   }
   let userDataForResponse;
   const existingUserWithEmail = await User.findOne({ email: fbemail });
@@ -45,7 +54,18 @@ const facebookAuth = async (req, res, next) => {
     try {
       await userDataForResponse.save();
     } catch (err) {
-      return next(new HttpError(err.message, 500));
+      return res.json({
+        metadata: {
+          message: "Auhtentication using fb failed!",
+          data: false,
+          error: true,
+        },
+        data: null,
+        error: {
+          message: "Server error! Please try again later.",
+          code: 400,
+        },
+      });
     }
   } else if (existingUserWithEmail.account.facebook.secret) {
     userDataForResponse = existingUserWithEmail;
@@ -87,9 +107,18 @@ const facebookAuth = async (req, res, next) => {
 const googleAuth = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new HttpError(JSON.stringify(errors), 422);
-    res.status(422);
-    return next(error);
+    return res.json({
+      metadata: {
+        message: "Auhtentication using google failed!",
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Invalid inputs!",
+        code: 400,
+      },
+    });
   }
   const { idToken, phone } = req.body;
   const client = new OAuth2Client(process.env.GOOGLE_OAUTH_CLIENT_ID);
@@ -128,7 +157,18 @@ const googleAuth = async (req, res, next) => {
       try {
         await userDataForResponse.save();
       } catch (err) {
-        return next(new HttpError(err.message, 500));
+        return res.json({
+          metadata: {
+            message: "Auhtentication using google failed!",
+            data: false,
+            error: true,
+          },
+          data: null,
+          error: {
+            message: "Google auth failed! Please try again later.",
+            code: 400,
+          },
+        });
       }
     } else if (existingUserWithEmail.account.google.secret) {
       userDataForResponse = existingUserWithEmail;
@@ -166,20 +206,36 @@ const googleAuth = async (req, res, next) => {
       },
     });
   } catch (err) {
-    res.status(401);
-    console.log(err);
-    return next(
-      new HttpError("Authentication using google failed! " + err.message, 401)
-    );
+    return res.json({
+      metadata: {
+        message: "Auhtentication using google failed!",
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Google auth failed! Please try again later.",
+        code: 400,
+      },
+    });
   }
 };
 
 const emailSignup = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new HttpError(JSON.stringify(errors), 422);
-    res.status(422);
-    return next(error);
+    return res.json({
+      metadata: {
+        message: "Auhtentication failed!",
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Invalid inputs!",
+        code: 400,
+      },
+    });
   }
   const { name, email, phone, image, password } = req.body;
   //console.log(email);
@@ -212,7 +268,18 @@ const emailSignup = async (req, res, next) => {
     try {
       await userDataForResponse.save();
     } catch (err) {
-      return next(new HttpError(err.message, 500));
+      return res.json({
+        metadata: {
+          message: "Auhtentication failed!",
+          data: false,
+          error: true,
+        },
+        data: null,
+        error: {
+          message: "Server Error! Try again later.",
+          code: 400,
+        },
+      });
     }
   } else {
     return res.json({
@@ -260,9 +327,18 @@ const emailSignup = async (req, res, next) => {
 const emailLogin = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new HttpError(JSON.stringify(errors), 422);
-    res.status(422);
-    return next(error);
+    return res.json({
+      metadata: {
+        message: "Auhtentication failed!",
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Invalid inputs!",
+        code: 400,
+      },
+    });
   }
   const { email, password } = req.body;
   const identifiedUser = await User.findOne({ email });
