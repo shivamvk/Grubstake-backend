@@ -287,7 +287,18 @@ const emailLogin = async (req, res, next) => {
       identifiedUser.account.email.secret.toString()
     );
   } catch (err) {
-    return next(new HttpError(err, 500));
+    return res.json({
+      metadata: {
+        message: "Auhtentication failed!",
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Seems like you're connected via google/fb!",
+        code: 400,
+      },
+    });
   }
   if (!isValidPassword) {
     return res.json({
