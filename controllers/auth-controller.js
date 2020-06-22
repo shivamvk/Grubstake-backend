@@ -5,8 +5,6 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { validationResult } = require("express-validator");
 
-const DUMMY_USERS = [];
-
 const facebookAuth = async (req, res, next) => {
   let fbid = null;
   let fbname = null;

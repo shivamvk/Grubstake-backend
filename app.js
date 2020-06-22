@@ -19,7 +19,7 @@ app.use("/api/v1/auth", authRoutes);
 
 db.connect()
   .then(() => {
-    app.listen(5000);
+    app.listen(process.env.PORT || 5000);
   })
   .catch((err) => {
     throw new HttpError(err.message, 500);
