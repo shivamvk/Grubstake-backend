@@ -9,7 +9,7 @@ const {
 
 router.use(checkAuth);
 
-router.get("/createdEvents", eventController.getCreatedEvents);
+router.get("/createdEvents", eventController.getCreatedEventsByUserId);
 
 router.post(
   "/create",

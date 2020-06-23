@@ -2,7 +2,7 @@ const Event = require("../models/event");
 const mongoose = require("mongoose");
 const User = require("../models/user");
 
-const getCreatedEvents = async (req, res, next) => {
+const getCreatedEventsByUserId = async (req, res, next) => {
   const userId = req.userData.id;
   let events;
   try {
@@ -110,9 +110,78 @@ const createEvent = async (req, res, next) => {
 };
 
 const upsertBasicDetails = async (req, res, next) => {
-  res.json({ okay: "kay" });
+  const userId = req.userData.userId;
+  const { eventId, basicDetails } = req.body;
+  let identfiedEvent;
+  try {
+    identfiedEvent = await Event.findById(eventId);
+  } catch (err) {
+    return res.json({
+      metadata: {
+        message: "Server error! " + err.message,
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Server error!",
+        code: 400,
+      },
+    });
+  }
+  if (!identfiedEvent) {
+    return res.json({
+      metadata: {
+        message: "Event not found for provided event id",
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Event not found",
+        code: 400,
+      },
+    });
+  }
+  identfiedEvent.basicDetails.basics.title = basicDetails.basics.title;
+  identfiedEvent.basicDetails.basics.logo = basicDetails.basics.logo;
+  identfiedEvent.basicDetails.basics.orgName = basicDetails.basics.orgName;
+  identfiedEvent.basicDetails.date.startDate = basicDetails.date.startDate;
+  identfiedEvent.basicDetails.date.endDate = basicDetails.date.endDate;
+  identfiedEvent.basicDetails.location.address = basicDetails.location.address;
+  identfiedEvent.basicDetails.location.city = basicDetails.location.city;
+  identfiedEvent.basicDetails.time.startTime = basicDetails.time.startTime;
+  identfiedEvent.basicDetails.time.endTime = basicDetails.time.endTime;
+  identfiedEvent.basicDetails.links.facebook = basicDetails.links.facebook;
+  identfiedEvent.basicDetails.links.website = basicDetails.links.website;
+  identfiedEvent.basicDetails.links.instagram = basicDetails.links.instagram;
+
+  try {
+    await identfiedEvent.save();
+  } catch (err) {
+    return res.json({
+      metadata: {
+        message: "Server error! " + err.message,
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Server error!",
+        code: 400,
+      },
+    });
+  }
+  res.json({
+    metadata: {
+      message: "Basic details upserted successfully",
+      data: true,
+      error: false,
+    },
+    data: identfiedEvent.toObject({getters: true})
+  });
 };
 
-exports.getCreatedEvents = getCreatedEvents;
+exports.getCreatedEventsByUserId = getCreatedEventsByUserId;
 exports.createEvent = createEvent;
 exports.upsertBasicDetails = upsertBasicDetails;

@@ -5,7 +5,17 @@ const createEventValidationRules = () => {
 };
 
 const basicDetailsValidationRules = () => {
-  return [body("basicDetails.basics.orgName").notEmpty()];
+  return [
+    body("eventId").notEmpty(),
+    body("basicDetails.basics.title").notEmpty(),
+    body("basicDetails.basics.logo").notEmpty(),
+    body("basicDetails.basics.orgName").notEmpty(),
+    body("basicDetails.date.startDate").notEmpty(),
+    body("basicDetails.location.address").notEmpty(),
+    body("basicDetails.location.city").notEmpty(),
+    body("basicDetails.time.startTime").notEmpty(),
+    body("basicDetails.time.endTime").notEmpty(),
+  ];
 };
 
 const validate = (req, res, next) => {

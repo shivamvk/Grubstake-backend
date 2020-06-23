@@ -54,9 +54,6 @@ const eventSchema = new Schema({
       city: {
         type: String,
       },
-      pincode: {
-        type: String,
-      },
     },
     time: {
       startTime: {
