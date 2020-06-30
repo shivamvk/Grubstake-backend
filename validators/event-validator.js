@@ -18,6 +18,14 @@ const basicDetailsValidationRules = () => {
   ];
 };
 
+const audienceDetailsValidationRules = () => {
+  return [
+    body("eventId").notEmpty(),
+    body("audienceDetails.expectedFootfall").isNumeric().notEmpty(),
+    body("audienceDetails.audienceTypes").isArray().notEmpty(),
+  ];
+};
+
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -33,6 +41,7 @@ const validate = (req, res, next) => {
         message: "Invalid inputs!",
         code: 400,
       },
+      errors: errors,
     });
   }
   next();
@@ -41,5 +50,6 @@ const validate = (req, res, next) => {
 module.exports = {
   createEventValidationRules,
   basicDetailsValidationRules,
+  audienceDetailsValidationRules,
   validate,
 };

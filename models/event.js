@@ -4,6 +4,10 @@ const uniqueValidator = require("mongoose-unique-validator");
 const Schema = mongoose.Schema;
 
 const eventSchema = new Schema({
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
   creator: {
     type: mongoose.Types.ObjectId,
     required: true,
@@ -63,6 +67,69 @@ const eventSchema = new Schema({
         type: String,
       },
     },
+  },
+  packages: [
+    {
+      sponsorOfferDetails: {
+        offers: [{ type: String }],
+        others: {
+          type: String,
+          default: null,
+        },
+        title: {
+          type: String,
+        },
+      },
+      sponsorRequestDetails: {
+        selection: {
+          type: String,
+        },
+        inCash: {
+          min: {
+            type: Number,
+          },
+          max: {
+            type: Number,
+          },
+        },
+        inKind: {
+          couponsRange: {
+            min: {
+              type: Number,
+            },
+            max: {
+              type: Number,
+            },
+          },
+          vouchersRange: {
+            min: {
+              type: Number,
+            },
+            max: {
+              type: Number,
+            },
+          },
+          goodiesRange: {
+            min: {
+              type: Number,
+            },
+            max: {
+              type: Number,
+            },
+          },
+        },
+      },
+    },
+  ],
+  audienceDetails: {
+    expectedFootfall: {
+      type: Number,
+    },
+    audienceTypes: [
+      {
+        type: String,
+      },
+    ],
   },
 });
 

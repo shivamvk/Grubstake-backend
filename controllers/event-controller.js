@@ -178,10 +178,149 @@ const upsertBasicDetails = async (req, res, next) => {
       data: true,
       error: false,
     },
-    data: identfiedEvent.toObject({getters: true})
+    data: identfiedEvent.toObject({ getters: true }),
+  });
+};
+
+const upsertAudienceDetails = async (req, res, next) => {
+  const { eventId, audienceDetails } = req.body;
+  let identfiedEvent;
+  try {
+    identfiedEvent = await Event.findById(eventId);
+  } catch (err) {
+    return res.json({
+      metadata: {
+        message: "Server error! " + err.message,
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Server error!",
+        code: 400,
+      },
+    });
+  }
+  if (!identfiedEvent) {
+    return res.json({
+      metadata: {
+        message: "Event not found for provided event id",
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Event not found",
+        code: 400,
+      },
+    });
+  }
+  identfiedEvent.audienceDetails.expectedFootfall =
+    audienceDetails.expectedFootfall;
+  identfiedEvent.audienceDetails.audienceTypes = audienceDetails.audienceTypes;
+  try {
+    await identfiedEvent.save();
+  } catch (err) {
+    return res.json({
+      metadata: {
+        message: "Server error! " + err.message,
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Server error!",
+        code: 400,
+      },
+    });
+  }
+  res.json({
+    metadata: {
+      message: "Audience details upserted successfully",
+      data: true,
+      error: false,
+    },
+    data: identfiedEvent.toObject({ getters: true }),
+  });
+};
+
+const setEventActivity = async (req, res, next) => {
+  const { isActive, eventId } = req.body;
+  console.log(
+    "setEventActivity:: isActive: " + isActive + " eventId: " + eventId
+  );
+  if (isActive === undefined || eventId === undefined) {
+    return res.json({
+      metadata: {
+        message: "Invalid inputs",
+        data: false,
+        error: true,
+      },
+      error: {
+        code: 400,
+        message: "Invalid inputs",
+      },
+    });
+  }
+  let identifiedEvent;
+  try {
+    identifiedEvent = await Event.findById(eventId);
+  } catch (err) {
+    console.log(err.message);
+    return res.json({
+      metadata: {
+        message: "Server error",
+        data: false,
+        error: true,
+      },
+      error: {
+        code: 500,
+        message: "Server error",
+      },
+    });
+  }
+  if (!identifiedEvent) {
+    return res.json({
+      metadata: {
+        message: "Could not find event with provided id",
+        data: false,
+        error: true,
+      },
+      error: {
+        code: 500,
+        message: "Event does not exist",
+      },
+    });
+  }
+  identifiedEvent.isActive = isActive;
+  try {
+    await identifiedEvent.save();
+  } catch (err) {
+    return res.json({
+      metadata: {
+        message: "Server error",
+        data: false,
+        error: true,
+      },
+      error: {
+        code: 500,
+        message: "Server error",
+      },
+    });
+  }
+  res.json({
+    metadata: {
+      message: "Server error",
+      data: true,
+      error: false,
+    },
+    data: identifiedEvent.toObject({ getters: true }),
   });
 };
 
 exports.getCreatedEventsByUserId = getCreatedEventsByUserId;
 exports.createEvent = createEvent;
+
 exports.upsertBasicDetails = upsertBasicDetails;
+exports.upsertAudienceDetails = upsertAudienceDetails;
+exports.setEventActivity = setEventActivity;
