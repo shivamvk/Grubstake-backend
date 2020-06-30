@@ -11,6 +11,14 @@ const userSchema = new Schema({
   image: {
     type: String,
   },
+  job: {
+    post: {
+      type: String,
+    },
+    companyName: {
+      type: String,
+    },
+  },
   email: {
     type: String,
     required: true,

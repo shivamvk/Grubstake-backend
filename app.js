@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const commonHeaders = require("./middleware/common-headers");
 const authRoutes = require("./routes/auth-routes");
+const userRoutes = require("./routes/user-routes");
 const eventRoutes = require("./routes/event-routes");
 const passport = require("passport");
 const db = require("./config/db");
@@ -18,6 +19,7 @@ require("./config/passport"); //passport config for facebook authentication
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/event", eventRoutes);
+app.use("/api/v1/user", userRoutes);
 
 db.connect()
   .then(() => {

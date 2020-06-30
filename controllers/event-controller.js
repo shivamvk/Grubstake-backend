@@ -2,38 +2,6 @@ const Event = require("../models/event");
 const mongoose = require("mongoose");
 const User = require("../models/user");
 
-const getCreatedEventsByUserId = async (req, res, next) => {
-  const userId = req.userData.id;
-  let events;
-  try {
-    const user = await User.findById(userId).populate("events");
-    events = user.events;
-  } catch (err) {
-    return res.json({
-      metadata: {
-        message: "Server error! " + err.message,
-        data: false,
-        error: true,
-      },
-      data: null,
-      error: {
-        message: "Server error!",
-        code: 400,
-      },
-    });
-  }
-  res.json({
-    metadata: {
-      message: "Events by user id.",
-      data: true,
-      error: false,
-    },
-    data: events.map((event) => {
-      return event.toObject({ getters: true });
-    }),
-  });
-};
-
 const createEvent = async (req, res, next) => {
   const { createdBy, type } = req.body;
   if (req.userData.id !== createdBy) {
@@ -382,7 +350,6 @@ const setEventActivity = async (req, res, next) => {
   });
 };
 
-exports.getCreatedEventsByUserId = getCreatedEventsByUserId;
 exports.createEvent = createEvent;
 
 exports.upsertBasicDetails = upsertBasicDetails;
