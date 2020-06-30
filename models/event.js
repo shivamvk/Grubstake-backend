@@ -13,6 +13,10 @@ const eventSchema = new Schema({
     required: true,
     ref: "User",
   },
+  createdOn: {
+    type: String,
+    required: true,
+  },
   basicDetails: {
     basics: {
       logo: {
@@ -130,6 +134,17 @@ const eventSchema = new Schema({
         type: String,
       },
     ],
+  },
+  pitchDetails: {
+    aboutEvent: {
+      type: String,
+    },
+    sponsorPitch: {
+      type: String,
+    },
+    creatorDescription: {
+      type: String,
+    },
   },
 });
 

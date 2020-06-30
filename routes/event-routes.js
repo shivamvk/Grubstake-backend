@@ -7,8 +7,11 @@ const {
   basicDetailsValidationRules,
   audienceDetailsValidationRules,
   validate,
+  pitchDetailsValidationRules,
 } = require("../validators/event-validator");
-const { createPackageValidationRules } = require("../validators/package.event-validator");
+const {
+  createPackageValidationRules,
+} = require("../validators/package.event-validator");
 
 router.use(checkAuth);
 
@@ -43,15 +46,19 @@ router.post(
 );
 
 router.post(
+  "/pitchDetails/upsert",
+  pitchDetailsValidationRules(),
+  validate,
+  eventController.upsertPitchDetails
+);
+
+router.post(
   "/package/save",
   createPackageValidationRules(),
   validate,
   packageController.savePackage
 );
 
-router.get(
-  "/package/byEventId",
-  packageController.getPackageByEventId
-)
+router.get("/package/byEventId", packageController.getPackageByEventId);
 
 module.exports = router;

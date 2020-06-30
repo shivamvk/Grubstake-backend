@@ -52,6 +52,7 @@ const createEvent = async (req, res, next) => {
   }
   const createdEvent = new Event({
     creator: createdBy,
+    createdOn: new Date().toISOString(),
     basicDetails: {
       basics: {
         type: type,
@@ -244,6 +245,69 @@ const upsertAudienceDetails = async (req, res, next) => {
   });
 };
 
+const upsertPitchDetails = async (req, res, next) => {
+  const { eventId, pitchDetails } = req.body;
+  let identfiedEvent;
+  try {
+    identfiedEvent = await Event.findById(eventId);
+  } catch (err) {
+    return res.json({
+      metadata: {
+        message: "Server error! " + err.message,
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Server error!",
+        code: 400,
+      },
+    });
+  }
+  if (!identfiedEvent) {
+    return res.json({
+      metadata: {
+        message: "Event not found for provided event id",
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Event not found",
+        code: 400,
+      },
+    });
+  }
+  identfiedEvent.pitchDetails.aboutEvent = pitchDetails.aboutEvent;
+  identfiedEvent.pitchDetails.sponsorPitch = pitchDetails.sponsorPitch;
+  identfiedEvent.pitchDetails.creatorDescription =
+    pitchDetails.creatorDescription;
+  try {
+    await identfiedEvent.save();
+  } catch (err) {
+    return res.json({
+      metadata: {
+        message: "Server error! " + err.message,
+        data: false,
+        error: true,
+      },
+      data: null,
+      error: {
+        message: "Server error!",
+        code: 400,
+      },
+    });
+  }
+  res.json({
+    metadata: {
+      message: "Pitch details upserted successfully",
+      data: true,
+      error: false,
+    },
+    data: identfiedEvent.toObject({ getters: true }),
+  });
+};
+
 const setEventActivity = async (req, res, next) => {
   const { isActive, eventId } = req.body;
   console.log(
@@ -323,4 +387,5 @@ exports.createEvent = createEvent;
 
 exports.upsertBasicDetails = upsertBasicDetails;
 exports.upsertAudienceDetails = upsertAudienceDetails;
+exports.upsertPitchDetails = upsertPitchDetails;
 exports.setEventActivity = setEventActivity;

@@ -26,6 +26,15 @@ const audienceDetailsValidationRules = () => {
   ];
 };
 
+const pitchDetailsValidationRules =() => {
+  return [
+    body("eventId").notEmpty(),
+    body("pitchDetails.aboutEvent").notEmpty(),
+    body("pitchDetails.sponsorPitch").notEmpty(),
+    body("pitchDetails.creatorDescription").notEmpty()
+  ];
+};
+
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -51,5 +60,6 @@ module.exports = {
   createEventValidationRules,
   basicDetailsValidationRules,
   audienceDetailsValidationRules,
+  pitchDetailsValidationRules,
   validate,
 };
